@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Địa Điểm</title>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+    <a href="index.html">&laquo; Quay lại trang tìm kiếm</a>
+    <hr>
+
+    <div id="location-detail">
+        <h1 id="locationName">Đang tải...</h1>
+        <p><strong>ID:</strong> <span id="locationId"></span></p>
+        <p><strong>Mô tả ngắn:</strong> <span id="locationShortDescription"></span></p>
+        <p><strong>Địa chỉ (nếu có):</strong> <span id="locationAddress"></span></p>
+        <p><strong>Tỉnh/Thành (nếu có):</strong> <span id="locationProvince"></span></p>
+        <h3>Mô tả chi tiết:</h3>
+        <div id="locationFullDescription" style="white-space: pre-wrap;"></div> 
+        </div>
+
+    <div id="detailErrorMessage" class="error"></div>
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:5000/api/v1"; // Địa chỉ backend của bạn
+
+        async function fetchLocationDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const locationId = urlParams.get('id');
+            const errorMessageDiv = document.getElementById('detailErrorMessage');
+
+            if (!locationId) {
+                document.getElementById('locationName').textContent = "Không tìm thấy ID địa điểm.";
+                return;
+            }
+
+            try {
+                // QUAN TRỌNG: Bạn cần tạo API endpoint này ở backend: /api/v1/location/<id>
+                const response = await fetch(`${API_BASE_URL}/location/${locationId}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Lỗi từ server: ${response.status}`);
+                }
+                const data = await response.json();
+                displayLocationDetail(data);
+            } catch (error) {
+                console.error('Lỗi khi tải chi tiết địa điểm:', error);
+                document.getElementById('locationName').textContent = "Lỗi tải dữ liệu.";
+                errorMessageDiv.textContent = `Lỗi: ${error.message}`;
+            }
+        }
+
+        function displayLocationDetail(locationData) {
+    document.getElementById('locationName').textContent = locationData.ten || "N/A";
+    document.getElementById('locationId').textContent = locationData.id_dia_diem || "N/A";
+    document.getElementById('locationShortDescription').textContent = locationData.mo_ta || "N/A";
+    document.getElementById('locationAddress').textContent = locationData.dia_chi || "N/A";
+    document.getElementById('locationProvince').textContent = locationData.tinh || "N/A";
+
+    const fullDescriptionDiv = document.getElementById('locationFullDescription');
+    let rawFullDescription = locationData.mo_ta_chi_tiet || "Không có mô tả chi tiết.";
+
+    // Xử lý Markdown đơn giản cho **bold**
+    // Thay thế **text** bằng <strong>text</strong>
+    let processedDescription = rawFullDescription.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // (Tùy chọn) Xử lý xuống dòng: Thay thế \n bằng <br> nếu backend trả về \n
+    // processedDescription = processedDescription.replace(/\n/g, '<br>');
+    // Tuy nhiên, thẻ div với style "white-space: pre-wrap;" đã xử lý \n rồi.
+
+    // Sử dụng innerHTML để trình duyệt có thể render thẻ <strong>
+    fullDescriptionDiv.innerHTML = processedDescription;
+}
+
+        // Gọi hàm để tải chi tiết khi trang được load
+        window.onload = fetchLocationDetail;
+    </script>
+</body>
+</html>

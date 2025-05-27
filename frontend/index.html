@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm Kiếm Địa Điểm Du Lịch</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Tìm Kiếm Địa Điểm Du Lịch</h1>
+    <div>
+        <input type="text" id="searchInput" placeholder="Nhập từ khóa tìm kiếm...">
+        <button onclick="performSearch()">Tìm kiếm</button> 
+    </div>
+
+    <div id="queryDetails"></div>
+    <div id="results"></div>
+    <div id="errorMessage" class="error"></div>
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:5000/api/v1";
+
+        // ĐỊNH NGHĨA HÀM performSearch Ở ĐÂY, TRONG GLOBAL SCOPE
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('results');
+            const queryDetailsDiv = document.getElementById('queryDetails');
+            const errorMessageDiv = document.getElementById('errorMessage');
+
+            resultsDiv.innerHTML = ''; 
+            queryDetailsDiv.innerHTML = '';
+            errorMessageDiv.textContent = ''; 
+
+            if (!query.trim()) {
+                errorMessageDiv.textContent = "Vui lòng nhập từ khóa tìm kiếm.";
+                return;
+            }
+
+            console.log("Bắt đầu tìm kiếm với query:", query); // Thêm log để kiểm tra
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(query)}&limit=5`);
+                
+                console.log("Trạng thái response từ API:", response.status); // Thêm log
+
+                if (!response.ok) {
+                    let errorText = `Lỗi từ server: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || errorText;
+                    } catch (e) {
+                        // Không parse được JSON, có thể là lỗi HTML từ server
+                        errorText = await response.text(); // Lấy text lỗi
+                    }
+                    throw new Error(errorText);
+                }
+                const data = await response.json();
+                console.log("Dữ liệu nhận được từ API:", data); // Thêm log
+                displayResults(data);
+            } catch (error) {
+                console.error('Lỗi khi tìm kiếm:', error);
+                errorMessageDiv.textContent = `Lỗi: ${error.message}`;
+            }
+        }
+
+        // HÀM displayResults CŨNG PHẢI ĐƯỢC ĐỊNH NGHĨA Ở GLOBAL SCOPE
+        function displayResults(locationsArray) { // Hoặc (data) nếu bạn dùng cấu trúc JSON cũ
+            console.log("Dữ liệu truyền vào displayResults:", locationsArray);
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Xóa kết quả cũ trước khi hiển thị mới
+
+            // KIỂM TRA CẤU TRÚC `locationsArray` ở đây
+            // Nếu API của bạn trả về dạng { "province_results": ..., "other_results": ... }
+            // thì bạn cần xử lý `locationsArray.province_results.locations` và `locationsArray.other_results.locations`
+            // Nếu API trả về một danh sách phẳng các địa điểm, ví dụ [{id:..., ten:...}, ...]
+            // thì code dưới đây có thể phù hợp (nhưng cần đảm bảo locationsArray là list đó)
+
+            let itemsToDisplay = [];
+            if (locationsArray && Array.isArray(locationsArray)) { // Nếu API trả về list phẳng
+                 itemsToDisplay = locationsArray;
+            } else if (locationsArray && locationsArray.other_results && Array.isArray(locationsArray.other_results.locations)) {
+                // Nếu API trả về cấu trúc có other_results (chưa có province_results)
+                // Hoặc bạn có thể gộp cả province_results.locations và other_results.locations lại
+                if (locationsArray.province_results && Array.isArray(locationsArray.province_results.locations)) {
+                    itemsToDisplay = itemsToDisplay.concat(locationsArray.province_results.locations);
+                }
+                itemsToDisplay = itemsToDisplay.concat(locationsArray.other_results.locations);
+            }
+
+
+            if (itemsToDisplay && itemsToDisplay.length > 0) {
+                let htmlContent = `<h2>Kết quả tìm kiếm:</h2><ul>`;
+                itemsToDisplay.forEach(location => {
+                    const score = location.score !== undefined ? location.score.toFixed(4) : (location.tfidf_score !== undefined ? location.tfidf_score.toFixed(4) : 'N/A');
+                    htmlContent += `<li><a href="detail.html?id=${location.id_dia_diem}">${location.ten}</a> (Score: ${score})</li>`;
+                });
+                htmlContent += '</ul>';
+                resultsDiv.innerHTML = htmlContent;
+            } else {
+                resultsDiv.innerHTML = "<p>Không tìm thấy địa điểm nào phù hợp.</p>";
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>

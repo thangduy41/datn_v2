@@ -300,3 +300,29 @@ def search_locations_by_tfidf(user_query_text: str, num_results: int = 5) -> lis
     # Nếu VnCoreNLP là instance toàn cục trong preprocessor, thì không cần đóng ở đây.
     # close_vncorenlp() 
     return final_results_to_return
+
+def get_location_details_by_id(location_id: str) -> dict:
+    conn = None
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            print(f"Service: Không thể kết nối DB để lấy chi tiết cho ID {location_id}")
+            return None # Hoặc raise một exception cụ thể
+        cursor = conn.cursor(dictionary=True)
+        # Lấy tất cả các cột bạn muốn hiển thị trên trang chi tiết
+        query = "SELECT id_dia_diem, ten, mo_ta, dia_chi, tinh, mo_ta_chi_tiet FROM dia_danh WHERE id_dia_diem = %s"
+        cursor.execute(query, (location_id,))
+        result = cursor.fetchone() # Trả về một dictionary hoặc None nếu không tìm thấy
+        if result:
+            print(f"Service: Đã tìm thấy chi tiết cho ID {location_id}: {result.get('ten')}")
+        else:
+            print(f"Service: Không tìm thấy chi tiết cho ID {location_id} trong DB.")
+        return result
+    except mysql.connector.Error as err:
+        print(f"Service Lỗi khi lấy chi tiết địa điểm ID {location_id}: {err}")
+        return None # Hoặc raise exception
+    finally:
+        if conn and conn.is_connected():
+            if 'cursor' in locals() and cursor is not None:
+                cursor.close()
+            conn.close()
