@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     # Danh sách các câu truy vấn mẫu để kiểm tra
     sample_queries = [
-        "Tôi muốn đi du lịch ở những vùng sông nước, có hang động, núi non, và không phải các loại chùa, đền, miếu"
+        "Tôi muốn đi leo núi, đi phượt tại các tỉnh vùng núi phía bắc. Có các địa điểm nào hay ho không?"
     ]
 
     # (Đảm bảo file synonyms.json và các list trong preprocessor.py có dữ liệu để test)

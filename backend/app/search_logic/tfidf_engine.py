@@ -107,7 +107,64 @@ class TFIDFEngine:
         except Exception as e:
             print(f"TFIDFEngine Lỗi khi tính toán độ tương đồng: {e}")
             return []
+        
+    def get_scores_for_specific_ids(self, processed_query_text: str, target_ids: list) -> list:
+        if not self.is_ready() or not processed_query_text or not target_ids:
+            print("TFIDFEngine (get_scores_for_specific_ids): Điều kiện đầu vào không đủ hoặc engine chưa sẵn sàng.")
+            return []
+        
+        # Đảm bảo id_to_index_map đã được khởi tạo
+        if not self.id_to_index_map:
+             print("TFIDFEngine Lỗi (get_scores_for_specific_ids): id_to_index_map chưa được khởi tạo.")
+             return []
 
+        try:
+            query_vector = self.vectorizer.transform([processed_query_text])
+            
+            sub_matrix_rows_indices = []
+            valid_target_ids_in_order = [] 
+
+            for loc_id in target_ids:
+                if loc_id in self.id_to_index_map: # << Lỗi xảy ra ở đây nếu self.id_to_index_map không tồn tại
+                    row_index = self.id_to_index_map[loc_id]
+                    sub_matrix_rows_indices.append(row_index)
+                    valid_target_ids_in_order.append(loc_id)
+            
+            if not sub_matrix_rows_indices:
+                print(f"TFIDFEngine (get_scores_for_specific_ids): Không có ID nào trong target_ids ({len(target_ids)}) được tìm thấy trong model.")
+                return []
+
+            sub_tfidf_matrix = self.tfidf_matrix[sub_matrix_rows_indices, :]
+            
+            similarity_scores_for_subset = cosine_similarity(query_vector, sub_tfidf_matrix)[0]
+            
+            results = list(zip(valid_target_ids_in_order, [float(score) for score in similarity_scores_for_subset]))
+            return results
+
+        except AttributeError as ae: # Bắt cụ thể lỗi này để debug
+            print(f"TFIDFEngine Lỗi AttributeError trong get_scores_for_specific_ids: {ae}")
+            print("Có thể self.id_to_index_map chưa được tạo trong __init__.")
+            import traceback
+            traceback.print_exc()
+            return []
+        except Exception as e:
+            print(f"TFIDFEngine Lỗi khác trong get_scores_for_specific_ids: {e}")
+            import traceback
+            traceback.print_exc()
+            return []
+
+
+    def get_tinh_for_id(self, location_id: str) -> str | None:
+        """
+        Trả về thông tin 'tinh' cho một location_id.
+        Cần load dữ liệu này khi khởi tạo engine.
+        Hiện tại, search_service sẽ tự lấy 'tinh' từ DB.
+        Nếu bạn muốn tối ưu, hãy load 'tinh' vào TFIDFEngine.
+        """
+        if not self.is_ready(): return None
+        # return self.id_to_tinh_map.get(location_id) # Nếu bạn đã implement id_to_tinh_map
+        print("TFIDFEngine CẢNH BÁO: get_tinh_for_id chưa được triển khai đầy đủ để lấy 'tinh' từ dữ liệu đã load. Search Service sẽ phải query DB.")
+        return None # Hoặc raise NotImplementedError
 # (Tùy chọn) Tạo một instance để có thể import và sử dụng từ các module khác
 # Việc này giúp model chỉ được load một lần khi module này được import lần đầu
 # tfidf_engine_instance = TFIDFEngine()

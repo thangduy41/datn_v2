@@ -1,68 +1,269 @@
 /* frontend/style.css */
 body {
-    font-family: sans-serif;
-    margin: 20px;
-    line-height: 1.6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Thay đổi font chữ */
+    margin: 0;
+    padding: 0;
+    line-height: 1.7; /* Tăng line-height cho dễ đọc */
+    background-image: url('https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?q=80&w=2070&auto=format&fit=crop'); /* Ví dụ ảnh nền - BẠN NÊN THAY BẰNG ẢNH CỦA MÌNH */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #444; /* Màu chữ chính đậm hơn một chút */
 }
 
-input[type="text"] {
-    padding: 8px;
-    margin-right: 10px;
+.container {
+    max-width: 800px; /* THAY ĐỔI: Thu hẹp chiều rộng nội dung chính */
+    margin: 40px auto;
+    padding: 25px 35px; /* Tăng padding */
+    background-color: rgba(255, 255, 255, 0.97); /* Nền trắng ít trong suốt hơn để chữ rõ hơn */
+    border-radius: 10px; /* Bo góc nhiều hơn */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Shadow rõ hơn */
+}
+
+.search-header {
+    text-align: center;
+    margin-bottom: 35px; /* Tăng khoảng cách */
+    padding-bottom: 25px;
+    border-bottom: 1px solid #ddd; /* Đường kẻ mờ hơn */
+}
+
+.search-header h1 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-size: 2.2em; /* Tăng kích thước tiêu đề */
+}
+
+/* THAY ĐỔI: Cấu trúc cho ô tìm kiếm và nút */
+.search-form {
+    display: flex;
+    flex-direction: column; /* Xếp các phần tử theo cột */
+    align-items: center; /* Căn giữa các phần tử con */
+}
+
+.search-form input[type="text"] {
+    padding: 14px 18px; /* Tăng padding cho input */
     border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 300px;
+    border-radius: 8px; /* Bo góc nhiều hơn */
+    width: 80%; /* THAY ĐỔI: Ô tìm kiếm dài hơn */
+    max-width: 500px; /* Giới hạn chiều rộng tối đa */
+    font-size: 1.05em;
+    margin-bottom: 15px; /* Khoảng cách giữa input và button */
+    box-sizing: border-box; /* Để padding không làm tăng kích thước tổng */
 }
 
-button {
-    padding: 8px 15px;
-    background-color: #007bff;
+.search-form button {
+    padding: 12px 25px; /* Điều chỉnh padding cho button */
+    background-color: #007bff; /* Giữ màu xanh dương hoặc đổi màu bạn thích */
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 1.05em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: auto; /* Để button co giãn theo nội dung */
+    min-width: 150px; /* Chiều rộng tối thiểu */
 }
 
-button:hover {
+.search-form button:hover {
     background-color: #0056b3;
 }
 
-#results h2, #results h3 {
-    margin-top: 20px;
-    color: #333;
+.content-area {
+    margin-top: 25px;
 }
 
-#results ul {
+.query-details-section {
+    background-color: #f8f9fa; /* Màu nền sáng hơn chút */
+    padding: 18px 22px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 1px solid #e9ecef;
+}
+
+.query-details-section h3 {
+    margin-top: 0;
+    color: #343a40;
+    font-size: 1.25em;
+    border-bottom: 1px dashed #ced4da;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.query-details-section ul.query-info-list {
+    list-style-type: none;
+    padding-left: 0;
+    font-size: 0.95em;
+}
+.query-details-section ul.query-info-list li {
+    padding: 4px 0;
+    color: #495057;
+}
+.query-details-section ul.query-info-list li strong {
+    color: #212529;
+}
+
+
+.results-section .results-title {
+    font-size: 1.6em; /* Tăng kích thước tiêu đề mục kết quả */
+    color: #0056b3; /* Màu xanh đậm hơn */
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 12px;
+    margin-top: 35px;
+    margin-bottom: 25px;
+}
+
+.results-section ul.results-list {
     list-style-type: none;
     padding-left: 0;
 }
 
-#results li {
-    margin-bottom: 5px;
+/* THAY ĐỔI: Style cho từng mục kết quả (li.result-item) */
+.results-section li.result-item {
+    background-color: #ffffff;
+    padding: 18px 20px; /* Tăng padding */
+    border: 1px solid #dee2e6; /* Border rõ hơn chút */
+    border-left: 5px solid #007bff; /* Thêm viền màu bên trái để nổi bật */
+    border-radius: 8px; /* Bo tròn góc */
+    margin-bottom: 18px; /* Khoảng cách giữa các mục */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* Shadow rõ hơn */
+    transition: box-shadow 0.3s ease, transform 0.2s ease; /* Thêm hiệu ứng cho transform */
+}
+.results-section li.result-item:hover {
+    transform: translateY(-4px); /* Nhấc lên nhiều hơn */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12); /* Shadow đậm hơn khi hover */
 }
 
-#results a {
+.results-section li.result-item a {
+    font-weight: 600; /* Đậm hơn chút */
+    color: #0056b3;
+    font-size: 1.15em; /* To hơn */
     text-decoration: none;
-    color: #007bff;
+    display: block; /* Để link chiếm cả dòng, dễ click */
+    margin-bottom: 5px; /* Khoảng cách với score */
 }
 
-#results a:hover {
+.results-section li.result-item a:hover {
+    color: #004085;
     text-decoration: underline;
 }
 
-.error {
-    color: red;
-    margin-top: 10px;
+.results-section li.result-item .score {
+    font-size: 0.8em; /* Nhỏ hơn */
+    color: #6c757d; /* Xám hơn */
+    display: block;
+    margin-bottom: 8px; /* Khoảng cách với mô tả ngắn */
+    font-style: italic;
 }
 
-/* Detail page specific */
-#location-detail {
-    margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-#location-detail h1 {
+.results-section li.result-item .short-description {
+    font-size: 0.95em;
+    color: #495057; /* Màu chữ cho mô tả */
     margin-top: 0;
+    margin-bottom: 0;
 }
+
+.error-message, .no-results-placeholder {
+    color: #721c24; /* Màu đỏ đậm hơn cho lỗi */
+    margin-top: 25px;
+    padding: 12px 18px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.no-results-placeholder {
+    color: #6c757d;
+    background-color: #e9ecef; /* Nền khác biệt cho placeholder thường */
+    border: 1px solid #ced4da;
+    font-style: normal;
+}
+
+/* CSS cho trang detail.html (giữ nguyên hoặc tùy chỉnh thêm) */
+#location-detail {
+    /* ... (các style cũ cho detail page, bạn có thể giữ nguyên hoặc copy từ phiên bản trước) ... */
+    /* Ví dụ: */
+    margin-top: 20px;
+    padding: 25px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+.back-link {
+    display: inline-block; /* Để có thể đặt margin/padding */
+    margin-bottom: 20px;
+    padding: 8px 15px;
+    background-color: #6c757d; /* Màu xám */
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.back-link:hover {
+    background-color: #5a6268; /* Xám đậm hơn khi hover */
+    text-decoration: none;
+}
+
+hr.separator { /* Style cho đường kẻ ngang */
+    border: 0;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin-bottom: 25px;
+}
+
+#location-detail { /* Giữ nguyên các style cũ bạn đã có, hoặc điều chỉnh */
+    margin-top: 0; /* Bỏ margin-top nếu đã có separator */
+    padding: 25px;
+    border-radius: 8px;
+    background-color: #ffffff; /* Nền trắng cho phần chi tiết */
+    /* box-shadow: 0 4px 8px rgba(0,0,0,0.08);  Đã có trong style cũ */
+}
+
+#location-detail h1 { /* Tiêu đề tên địa điểm */
+    margin-top: 0;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db; /* Đường kẻ chân tiêu đề */
+    padding-bottom: 10px;
+    font-size: 2em; /* To hơn chút */
+    margin-bottom: 20px;
+}
+
+#location-detail p {
+    margin-bottom: 12px; /* Khoảng cách giữa các dòng thông tin */
+    color: #555; /* Màu chữ cho các đoạn p */
+}
+
+#location-detail p strong {
+    color: #333; /* Màu cho phần text strong */
+    margin-right: 5px;
+}
+
+.detail-section-title { /* Tiêu đề "Mô tả chi tiết:" */
+    font-size: 1.4em;
+    color: #34495e;
+    margin-top: 30px; /* Khoảng cách với phần thông tin trên */
+    margin-bottom: 10px;
+    border-bottom: 1px dashed #bdc3c7;
+    padding-bottom: 5px;
+}
+
+.full-description-content { /* Phần div chứa mô tả chi tiết */
+    background-color: #fdfdfd; /* Nền hơi khác một chút */
+    padding: 15px;
+    border: 1px solid #f0f0f0; /* Viền rất nhẹ */
+    border-radius: 4px;
+    white-space: pre-wrap; /* Giữ định dạng xuống dòng, tab từ backend */
+    color: #333;
+    font-size: 1.05em; /* To hơn chút cho dễ đọc */
+}
+
+/* error-message đã có style chung, không cần thêm nếu bạn hài lòng */
+
+
+#location-detail h1 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+#location-detail h3 { color: #34495e; margin-top: 20px; }
+#location-detail p { margin-bottom: 10px; }
+#locationFullDescription { background-color: #fdfdfd; padding: 15px; border: 1px dashed #eee; border-radius: 4px; white-space: pre-wrap; }
