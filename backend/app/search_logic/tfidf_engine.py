@@ -15,10 +15,12 @@ class TFIDFEngine:
         Khởi tạo TFIDFEngine bằng cách tải các model đã được huấn luyện.
         Việc tải này chỉ nên xảy ra một lần khi đối tượng TFIDFEngine được tạo.
         """
+        self.id_to_index_map: dict = {}
         self.vectorizer: TfidfVectorizer = None
         self.tfidf_matrix: csr_matrix = None
         self.location_ids: list = None
         self._load_artifacts()
+        self.id_to_index_map = {loc_id: i for i, loc_id in enumerate(self.location_ids)}
 
     def _load_artifacts(self):
         """Tải các thành phần TF-IDF từ file .pkl."""

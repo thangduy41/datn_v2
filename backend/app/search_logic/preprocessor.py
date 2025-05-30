@@ -14,10 +14,19 @@ TRAVEL_KEYWORDS = [
 # Danh sách từ phủ định
 NEGATIVE_WORDS = ['không', 'chẳng', 'chả', 'ko', 'k', 'hông', 'chớ', 'đừng', 'tránh']
 
-# Danh sách địa danh phổ biến làm fallback
+# Danh sách tất cả tỉnh/thành phố Việt Nam (chuẩn hóa: chữ thường, dấu gạch dưới)
 COMMON_LOCATIONS = [
-    'hà_nội', 'đà_nẵng', 'thành_phố_hồ_chí_minh', 'miền_bắc', 
-    'tỉnh_điện_biên', 'huế', 'nha_trang', 'phú_quốc', 'đà_lạt'
+    'hà_nội', 'đà_nẵng', 'thành_phố_hồ_chí_minh', 'an_giang', 'bà_rịa_vũng_tàu',
+    'bạc_liêu', 'bắc_kạn', 'bắc_giang', 'bắc_ninh', 'bến_tre', 'bình_dương',
+    'bình_định', 'bình_phước', 'bình_thuận', 'cà_mau', 'cao_bằng', 'cần_thơ',
+    'đắk_lắk', 'đắk_nông', 'điện_biên', 'đồng_nai', 'đồng_tháp', 'gia_lai',
+    'hà_giang', 'hà_nam', 'hà_tĩnh', 'hải_dương', 'hải_phòng', 'hậu_giang',
+    'hòa_bình', 'hưng_yên', 'khánh_hòa', 'kiên_giang', 'kon_tum', 'lai_châu',
+    'lâm_đồng', 'lạng_sơn', 'lào_cai', 'long_an', 'nam_định', 'nghệ_an',
+    'ninh_bình', 'ninh_thuận', 'phú_thọ', 'phú_yên', 'quảng_bình', 'quảng_nam',
+    'quảng_ngãi', 'quảng_ninh', 'quảng_trị', 'sóc_trăng', 'sơn_la', 'tây_ninh',
+    'thái_bình', 'thái_nguyên', 'thanh_hóa', 'thừa_thiên_huế', 'tiền_giang',
+    'trà_vinh', 'tuyên_quang', 'vĩnh_long', 'vĩnh_phúc', 'yên_bái'
 ]
 
 # Khởi tạo VnCoreNLP instance toàn cục
@@ -76,6 +85,7 @@ def preprocess_query(query, vncorenlp_jar_path=os.path.join("lib", "VnCoreNLP-1.
             ner_labels.append(token['nerLabel'])
     
     # Debug: In token, nhãn NER và POS để kiểm tra
+    print("Debug - Query:", query)
     print("Debug - Tokens, NER, and POS labels:")
     for token, ner, pos in zip(all_tokens, ner_labels, pos_tags):
         print(f"Token: {token}, NER: {ner}, POS: {pos}")
@@ -93,16 +103,22 @@ def preprocess_query(query, vncorenlp_jar_path=os.path.join("lib", "VnCoreNLP-1.
                 loc += '_' + all_tokens[j]
                 location_tokens.add(all_tokens[j])
                 j += 1
+            # Loại bỏ tiền tố "tỉnh" hoặc "thành_phố"
+            if loc.startswith('tỉnh_'):
+                loc = loc[len('tỉnh_'):]
+            elif loc.startswith('thành_phố_'):
+                loc = loc[len('thành_phố_'):]
             location_keywords.append(loc)
             i = j
         else:
             i += 1
     
-    # Fallback: Kiểm tra địa danh phổ biến nếu NER không nhận diện
-    for token in all_tokens:
-        if token in COMMON_LOCATIONS and token not in location_keywords:
-            location_keywords.append(token)
-            location_tokens.add(token)
+    # Fallback: Kiểm tra địa danh phổ biến và các cụm từ
+    query_normalized = query.replace(' ', '_').lower()
+    for loc in COMMON_LOCATIONS:
+        if loc in query_normalized and loc not in location_keywords:
+            location_keywords.append(loc)
+            location_tokens.add(loc)
     
     # Trích xuất từ khóa phủ định
     negative_keywords = []

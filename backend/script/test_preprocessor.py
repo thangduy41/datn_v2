@@ -1,16 +1,12 @@
-# backend/scripts/test_preprocessor_functionality.py
 import sys
 import os
-import json # Để in dictionary cho đẹp
+import json
 
 # Thêm thư mục `backend` vào PYTHONPATH để có thể import `app`
-# Điều này quan trọng khi chạy script từ thư mục `scripts`
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-# Bây giờ mới import các module từ package 'app'
-# Giả định rằng preprocessor.py của bạn nằm trong app/search_logic/
 try:
     from app.search_logic.preprocessor import preprocess_query
 except ModuleNotFoundError:
@@ -23,50 +19,72 @@ except ImportError as e:
     print(f"LỖI IMPORT: {e}")
     print("Có thể có lỗi cú pháp trong file preprocessor.py hoặc các file nó import.")
     sys.exit(1)
-
+except Exception as e:
+    print(f"LỖI KHÔNG XÁC ĐỊNH KHI IMPORT HOẶC KHỞI TẠO: {e}")
+    sys.exit(1)
 
 if __name__ == "__main__":
-    print("--- Bắt đầu kiểm tra Preprocessor Functionality ---")
+    print("--- Bắt đầu kiểm tra khả năng nhận diện của Preprocessor với truy vấn phức tạp ---")
+    print("Định dạng output: Input Query || LocationKws: [...] || AllKws: [...] || NegativeKws: [...]")
+    print("-" * 80)
 
-    # Danh sách các câu truy vấn mẫu để kiểm tra
-    sample_queries = [
-        "Tôi muốn đi leo núi, đi phượt tại các tỉnh vùng núi phía bắc. Có các địa điểm nào hay ho không?"
-    ]
+    # Câu truy vấn mẫu chứa sở thích, tên tỉnh, và phủ định
+    query = "Biển đẹp ở Quảng Nam không đông đúc"
+    expected_location = "quảng_nam"
+    expected_all_keywords = ["biển"]  # Có thể bao gồm "đẹp" tùy vào logic của preprocessor
+    expected_negative = ["đông_đúc"]
 
-    # (Đảm bảo file synonyms.json và các list trong preprocessor.py có dữ liệu để test)
-    # Ví dụ, synonyms.json có:
-    # {
-    #     "bãi biển": ["biển", "bờ biển"],
-    #     "phượt": ["khám phá", "du lịch bụi"],
-    #     "sang trọng": ["cao cấp", "luxury"]
-    # }
-    # Và các list NEGATION_TRIGGERS, POSSIBLE_NEGATED_CONCEPTS, VIETNAM_PROVINCES_NORMALIZED, ...
-    # trong preprocessor.py đã được định nghĩa.
+    print(f"\nInput: \"{query}\"")
+    print(f"Kỳ vọng: LocationKws chứa '{expected_location}', AllKws chứa {expected_all_keywords}, NegativeKws chứa {expected_negative}")
 
-    for i, query in enumerate(sample_queries):
-        print(f"\n\n--- TEST CASE {i+1} ---")
-        print(f"Truy vấn đầu vào: \"{query}\"")
+    try:
+        # Gọi hàm preprocess_query
+        processed_result = preprocess_query(query)
 
-        try:
-            processed_result = preprocess_query(query)
+        # Lấy kết quả
+        location_kws = processed_result.get('location_keywords', [])
+        all_kws = processed_result.get('all_keywords', [])
+        negative_kws = processed_result.get('negative_keywords', [])
 
-            print("\nKết quả từ preprocess_query:")
-            print("------------------------------------")
-            # In dictionary một cách dễ đọc
-            print(json.dumps(processed_result, indent=4, ensure_ascii=False))
-            print("------------------------------------")
+        # Chuẩn hóa location_kws để so sánh
+        normalized_location_kws = []
+        for kw in location_kws:
+            normalized_kw = kw.lower()
+            if normalized_kw.startswith('tỉnh_'):
+                normalized_kw = normalized_kw[len('tỉnh_'):]
+            elif normalized_kw.startswith('thành_phố_'):
+                normalized_kw = normalized_kw[len('thành_phố_'):]
+            normalized_location_kws.append(normalized_kw)
 
-            # Bạn có thể thêm các assert ở đây để kiểm tra cụ thể nếu muốn tự động hóa việc test
-            # Ví dụ:
-            # if query == "Địa điểm du lịch ở Hà Nội không có chùa chiền":
-            #     assert processed_result['location_entities']['province'] == 'hà nội', "Lỗi nhận diện tỉnh Hà Nội"
-            #     assert 'chùa' in processed_result['negated_keywords'], "Lỗi nhận diện từ khóa phủ định 'chùa'"
+        # Kiểm tra kết quả
+        errors = []
+        if expected_location not in normalized_location_kws:
+            errors.append(f"LocationKws: Không tìm thấy '{expected_location}' trong {location_kws} (Chuẩn hóa: {normalized_location_kws})")
+        if not all(kw in all_kws for kw in expected_all_keywords):
+            errors.append(f"AllKws: Không tìm thấy {expected_all_keywords} trong {all_kws}")
+        if not all(kw in negative_kws for kw in expected_negative):
+            errors.append(f"NegativeKws: Không tìm thấy {expected_negative} trong {negative_kws}")
 
-        except Exception as e:
-            print(f"LỖI khi xử lý truy vấn '{query}': {e}")
-            import traceback
-            traceback.print_exc() # In đầy đủ traceback để dễ debug
+        print(f"LocationKws: {location_kws} || AllKws: {all_kws} || NegativeKws: {negative_kws}")
 
-        print("="*50)
+        if errors:
+            print("\nKẾT QUẢ: CÓ LỖI!")
+            for error in errors:
+                print(f"- {error}")
+        else:
+            print("\nKẾT QUẢ: NHẬN DIỆN ĐÚNG TẤT CẢ YẾU TỐ!")
 
+    except Exception as e:
+        print(f"LỖI khi xử lý truy vấn '{query}': {e}")
+        import traceback
+        traceback.print_exc()
+
+    print("-" * 80)
     print("\n--- Kiểm tra Preprocessor Functionality hoàn tất ---")
+
+    # Đóng VnCoreNLP
+    try:
+        from app.search_logic.preprocessor import close_vncorenlp
+        close_vncorenlp()
+    except Exception as e:
+        print(f"LỖI khi đóng VnCoreNLP: {e}")

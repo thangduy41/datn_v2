@@ -35,7 +35,7 @@ if __name__ == "__main__":
     sample_queries_to_test = [
         {
             "description": "TEST 1: Query có từ khóa mô tả và Tỉnh cụ thể",
-            "query": "Tôi muốn đi tham quan các địa điểm du lịch Hà Nội, có thể là chùa chiền, hồ, di tích lịch sử. có địa điểm nào hay không"
+            "query": "Tôi muốn đi tham quan các ngôi chùa lớn ở Hà Nội"
         },
         
     ]
